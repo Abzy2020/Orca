@@ -79,7 +79,8 @@ def get_network_and_broadcast_addrs(ip: str, subnet_count: int, assignable_ips: 
     # broadcast address end
     broad_addr = net_addr + (subnet_count - 1) if subnet_count > 1 else 255
     if octet_position == 3:
-        network_part = octets[0:octet_position]
+        # Ex: [0.0.0.(0)]
+        network_part = octets[0:octet_position]             # We only have to calculate the last octet in an IP Address
         increment = assignable_ips + 2
         broad_addr = increment - 1
         while True:
@@ -95,10 +96,11 @@ def get_network_and_broadcast_addrs(ip: str, subnet_count: int, assignable_ips: 
             net_addr += increment
             broad_addr += increment
     elif octet_position == 2:
-        network_part = octets[0:octet_position]
+        # Ex: [0.0.(0).0]
+        network_part = octets[0:octet_position]             # We have to calculate the second to last octets, the last octets are predicatable from here
         third_octet = octets[octet_position]
-        increment = math.ceil(assignable_ips / 256)
-        third_oct_start = 0
+        increment = math.ceil(assignable_ips / 256)         # calculate how much we can increment
+        third_oct_start = 0                                 # Will be the start of a subnet address range
         third_oct_end = third_oct_start + increment - 1
         while True:
             if third_oct_start <= int(third_octet) <= third_oct_end:
@@ -113,13 +115,16 @@ def get_network_and_broadcast_addrs(ip: str, subnet_count: int, assignable_ips: 
             third_oct_start += increment
             third_oct_end += increment
     elif octet_position == 1:
-        network_part = octets[0:octet_position]
+        # Ex: [0.(0).0.0]
+        network_part = octets[0:octet_position]             # We have to calculate the last 3 octets in an IP Address
         second_octet = octets[octet_position]
-        increment = math.ceil(assignable_ips / 65536)
+        increment = math.ceil(assignable_ips / 65536)       # (# of assignable IPs / subnet size) will be the start of the subnet address range
+        print(f'Increment: {increment}')
         second_oct_start = 0
         second_oct_end = second_oct_start + increment - 1
         while True:
             if (second_oct_start <= int(second_octet) <= second_oct_end):
+                # append the network sections of the address to the last octet
                 return  {
                     'net_addr': f"{'.'.join(network_part)}.{second_oct_start}.{0}.{0}", 
                     'first_host': f"{'.'.join(network_part)}.{second_oct_start}.{0}.{1}",
@@ -129,6 +134,7 @@ def get_network_and_broadcast_addrs(ip: str, subnet_count: int, assignable_ips: 
                 }
             second_oct_start += increment
             second_oct_end += increment
+
 
 
 def orgnize_info(ip: str, cidr: int, classful_cidr: int, octet_position: int):
@@ -156,8 +162,6 @@ def get_subnet_and_ip_addr_count(ip: str, cidr: int | None, subnet_mask: str | N
             binary_form += f"{dec_to_bin(int(bits))}." if i < 3 else f"{dec_to_bin(int(bits))}"
         cidr = binary_form.count('1')
     print(f'IP Address: {ip}/{cidr}', end='\n\n')
-    if cidr < 8:                            # 00000000.00000000.00000000.00000000 - 11111111.00000000.00000000.00000000 
-        pass
     if cidr >= 8 and cidr < 16:             # 11111111.10000000.00000000.00000000 - 11111111.11111111.00000000.00000000 
         orgnize_info(ip, cidr, 8, 1)
     if cidr >= 16 and cidr < 24:            # 11111111.11111111.00000000.00000000 - 11111111.11111111.11111110.00000000 
@@ -168,5 +172,5 @@ def get_subnet_and_ip_addr_count(ip: str, cidr: int | None, subnet_mask: str | N
 
 if __name__ == '__main__':
     print()
-    get_subnet_and_ip_addr_count('192.168.10.17', cidr=28, subnet_mask='255.255.255.240')
+    get_subnet_and_ip_addr_count('192.168.10.17', cidr=5, subnet_mask=None)
     print()
