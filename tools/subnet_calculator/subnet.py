@@ -134,10 +134,30 @@ def get_network_and_broadcast_addrs(ip: str, subnet_count: int, assignable_ips: 
                 }
             second_oct_start += increment
             second_oct_end += increment
+    elif octet_position == 0:
+        # Ex: [(0).0.0.0]
+        network_part = octets[0:octet_position]                # We have to calculate the last 3 octets in an IP Address
+        first_octet = octets[octet_position]
+        increment = math.ceil(assignable_ips / 16777216)       # (# of assignable IPs / subnet size) will be the start of the subnet address range
+        print(f'Increment: {increment}')
+        first_oct_start = 0
+        first_oct_end = first_oct_start + increment - 1
+        while True:
+            if (first_oct_start <= int(first_octet) <= first_oct_end):
+                # append the network sections of the address to the last octet
+                return  {
+                    'net_addr': f"{first_oct_start}.{0}.{0}.{0}", 
+                    'first_host': f"{first_oct_start}.{0}.{0}.{1}",
+                    'last_host': f"{first_oct_end}.{255}.{255}.{254}", 
+                    'broad_addr': f"{first_oct_end}.{255}.{255}.{255}",
+                    'network_class': ip_class
+                }
+            first_oct_start += increment
+            first_oct_end += increment
 
 
 
-def orgnize_info(ip: str, cidr: int, classful_cidr: int, octet_position: int):
+def organize_info(ip: str, cidr: int, classful_cidr: int, octet_position: int):
     # calculate subnet and host counts
     subnet_count = calc_subnet_count(cidr, classful_cidr)
     assignable_ips = calc_assignable_ips(cidr)
@@ -162,15 +182,17 @@ def get_subnet_and_ip_addr_count(ip: str, cidr: int | None, subnet_mask: str | N
             binary_form += f"{dec_to_bin(int(bits))}." if i < 3 else f"{dec_to_bin(int(bits))}"
         cidr = binary_form.count('1')
     print(f'IP Address: {ip}/{cidr}', end='\n\n')
-    if cidr >= 8 and cidr < 16:             # 11111111.10000000.00000000.00000000 - 11111111.11111111.00000000.00000000 
-        orgnize_info(ip, cidr, 8, 1)
+    if cidr < 8:                            # 00000000.00000000.00000000.00000000 - 11111110.00000000.00000000.00000000 
+        organize_info(ip, cidr, 0, 0)
+    if cidr >= 8 and cidr < 16:             # 11111111.00000000.00000000.00000000 - 11111111.11111111.00000000.00000000 
+        organize_info(ip, cidr, 8, 1)
     if cidr >= 16 and cidr < 24:            # 11111111.11111111.00000000.00000000 - 11111111.11111111.11111110.00000000 
-        orgnize_info(ip, cidr, 16, 2)
+        organize_info(ip, cidr, 16, 2)
     if cidr >= 24:                           # 11111111.11111111.11111111.00000000 - 11111111.11111111.11111111.11111111
-        orgnize_info(ip, cidr, 24, 3)
+        organize_info(ip, cidr, 24, 3)
 
 
 if __name__ == '__main__':
     print()
-    get_subnet_and_ip_addr_count('192.168.10.17', cidr=5, subnet_mask=None)
+    get_subnet_and_ip_addr_count('192.168.10.17', cidr=0, subnet_mask=None)
     print()
