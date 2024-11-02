@@ -168,5 +168,5 @@ def get_subnet_and_ip_addr_count(ip: str, cidr: int | None, subnet_mask: str | N
 
 if __name__ == '__main__':
     print()
-    get_subnet_and_ip_addr_count('70.135.152.186', cidr=8, subnet_mask='255.0.0.0')
+    get_subnet_and_ip_addr_count('192.168.10.17', cidr=8, subnet_mask='255.255.255.240')
     print()
