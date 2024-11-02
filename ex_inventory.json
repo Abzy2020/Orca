@@ -1,0 +1,170 @@
+{
+    "nodes": [
+        {
+            "name": "server-laptop",
+            "Ipv4": "192.168.1.150"
+        },
+        {
+            "name": "Z-Mini-Pc",
+            "Ipv4": "192.168.88.13"
+        },
+        {
+            "name": "Z-WIN-SERVER",
+            "Ipv4": "192.168.88.12"
+        },
+        {
+            "name": "MyLinuxServer",
+            "Ipv4": "192.168.1.153"
+        },
+        {
+            "name": "zbzy",
+            "Ipv4": "192.168.2.3"
+        }
+    ],
+
+    "net_devices": {
+        "router": {
+            "settings": {
+                "Ipv4": "192.168.88.1",
+                "subnet_mask": "255.255.255.240"
+            }
+        },
+        "switch": {
+            "settings": {
+                "Ipv4": "192.168.88.12",
+                "subnet_mask": "255.255.255.240",
+                "default_gateway": "192.168.2.1"
+            }
+        }
+    },
+
+
+    "config": {
+        "authentication": {
+            "host_key_path": "C:/Users/<user>/.ssh/known_hosts"
+        },
+        "script": [
+            "whoami",
+            "cd"
+        ],
+        "native": {
+            "methods": {
+                "transfer": {
+                    "target": "Z-Mini-Pc",
+                    "port": 22,
+                    "method": "send",
+                    "local_path": "C:/Users/<user>/OneDrive/Desktop/Employees.txt",
+                    "remote_path": "C:/Users/Administrator/Documents",
+                    "recursive": true,
+                    "preserve_times": false
+                },
+                "ping": {
+                    "target": "*",
+                    "timeout": 2,
+                    "verbose": true
+                },
+                "virtual_machine": {
+                    "execution_options": ["add", "change_system_adapter"],
+                    "control" : {
+                        "method": "list vms",
+                        "type": "headless",
+                        "host": "192.168.88.13",
+                        "uuid": "63a434fb-368a-461b-b996-3692b8e19690"
+                    },
+                    "natnetwork" : {
+                        "change_system_adapter": {
+                            "uuid": "c1bd9363-91d6-449c-9f2c-8642f613573f",
+                            "adapter_num": "1",
+                            "nat_net_name": "NetworkName"
+                        },
+                        "add": {
+                            "enable": true,
+                            "netname": "NetworkName",
+                            "network_prefix": "192.168.30.0/24",
+                            "enable_dhcp": true,
+                            "enable_ipv6": true 
+                        },
+                        "modify": {
+                            "enable": true,
+                            "netname": "NetworkName",
+                            "network_prefix": "192.168.30.0/24",
+                            "enable_dhcp": true,
+                            "enable_ipv6": true 
+                        },
+                        "list": {
+                            "filter_pattern": ""
+                        },
+                        "remove": {
+                            "netname": ""
+                        },
+                        "start": {
+                            "netname": ""
+                        },
+                        "stop": {
+                            "netname": ""
+                        }
+                    }
+                },
+                "router_backup": {
+                    "backup_filename": null
+                },
+                "switch_backup": {
+                    "backup_filename": null,
+                    "headers": {
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                        "Accept-Encoding": "gzip, deflate",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Connection": "keep-alive",
+                        "Host": "192.168.2.2",
+                        "Referer": "http://192.168.2.2/ConfigRpm.htm",
+                        "Upgrade-Insecure-Requests": "1",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                    }
+                },
+                "router_restore": {
+                    "restore_filename": null
+                },
+                "switch_restore": {
+                    "restore_filename": null,
+                    "headers": {
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                        "Accept-Encoding": "gzip, deflate",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Cache-Control": "max-age=0",
+                        "Connection": "keep-alive",
+                        "Content-Length": "2464",
+                        "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryrSzqSPEcB9ds7nRh",
+                        "Host": "192.168.2.2",
+                        "Origin": "http://192.168.2.2",
+                        "Referer": "http://192.168.2.2/ConfigRpm.htm",
+                        "Upgrade-Insecure-Requests": "1",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                    }
+                },
+                "create_vlan": {
+                    "vid": "200",
+                    "vname": "Hosts",
+                    "port_1": "1",
+                    "port_2": "1",
+                    "port_3": "2",
+                    "port_4": "2",
+                    "port_5": "2",
+                    "qvlan_add": "Add/Modify",
+                    "headers": {
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                        "Accept-Encoding": "gzip, deflate",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Connection": "keep-alive",
+                        "Host": "192.168.2.2",
+                        "Referer": "http://192.168.2.2/qvlanSet.cgi?qvlan_en=1&qvlan_mode=Apply",
+                        "Upgrade-Insecure-Requests": "1",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"                        
+                    }
+                },
+                "wake_on_lan": {
+                    "target": ""
+                }
+            }
+        }
+    }
+}
