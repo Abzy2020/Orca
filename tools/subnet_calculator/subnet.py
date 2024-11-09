@@ -70,91 +70,42 @@ def get_network_class(ip: str):
         return ip_class.get(4)
 
 
+def get_increment(octet_position, assignable_ips):
+    if octet_position == 3:
+        return assignable_ips + 2
+    elif octet_position == 2:
+        return math.ceil(assignable_ips / 256)
+    elif octet_position == 1:
+        return math.ceil(assignable_ips / 65536)
+    elif octet_position == 0:
+        return math.ceil(assignable_ips / 16777216)
+    
+
 def get_network_and_broadcast_addrs(ip: str, subnet_count: int, assignable_ips: int, octet_position: int, **kwargs):
     ip_class = get_network_class(ip)
     # split the ip address by the dots
     octets = ip.split('.')
-    # network address start
-    net_addr = 0
-    # broadcast address end
-    broad_addr = net_addr + (subnet_count - 1) if subnet_count > 1 else 255
-    if octet_position == 3:
-        # Ex: [0.0.0.(0)]
-        network_part = octets[0:octet_position]             # We only have to calculate the last octet in an IP Address
-        increment = assignable_ips + 2
-        broad_addr = increment - 1
-        while True:
-            if net_addr <= int(octets[octet_position]) <= broad_addr:
-                # append the network sections of the address to the last octet
-                return {
-                        'net_addr': f"{'.'.join(network_part)}.{net_addr}", 
-                        'first_host': f"{'.'.join(network_part)}.{net_addr + 1}",
-                        'last_host': f"{'.'.join(network_part)}.{broad_addr - 1}", 
-                        'broad_addr': f"{'.'.join(network_part)}.{broad_addr}",
-                        'network_class': ip_class
-                    }
-            net_addr += increment
-            broad_addr += increment
-    elif octet_position == 2:
-        # Ex: [0.0.(0).0]
-        network_part = octets[0:octet_position]             # We have to calculate the second to last octets, the last octets are predicatable from here
-        third_octet = octets[octet_position]
-        increment = math.ceil(assignable_ips / 256)         # calculate how much we can increment
-        third_oct_start = 0                                 # Will be the start of a subnet address range
-        third_oct_end = third_oct_start + increment - 1
-        while True:
-            if third_oct_start <= int(third_octet) <= third_oct_end:
-                # append the network sections of the address to the last octet
-                return {
-                        'net_addr': f"{'.'.join(network_part)}.{third_oct_start}.{0}", 
-                        'first_host': f"{'.'.join(network_part)}.{third_oct_start}.{1}",
-                        'last_host': f"{'.'.join(network_part)}.{third_oct_end}.{254}", 
-                        'broad_addr': f"{'.'.join(network_part)}.{third_oct_end}.{255}",
-                        'network_class': ip_class
-                    }
-            third_oct_start += increment
-            third_oct_end += increment
-    elif octet_position == 1:
-        # Ex: [0.(0).0.0]
-        network_part = octets[0:octet_position]             # We have to calculate the last 3 octets in an IP Address
-        second_octet = octets[octet_position]
-        increment = math.ceil(assignable_ips / 65536)       # (# of assignable IPs / subnet size) will be the start of the subnet address range
-        print(f'Increment: {increment}')
-        second_oct_start = 0
-        second_oct_end = second_oct_start + increment - 1
-        while True:
-            if (second_oct_start <= int(second_octet) <= second_oct_end):
-                # append the network sections of the address to the last octet
-                return  {
-                    'net_addr': f"{'.'.join(network_part)}.{second_oct_start}.{0}.{0}", 
-                    'first_host': f"{'.'.join(network_part)}.{second_oct_start}.{0}.{1}",
-                    'last_host': f"{'.'.join(network_part)}.{second_oct_end}.{255}.{254}", 
-                    'broad_addr': f"{'.'.join(network_part)}.{second_oct_end}.{255}.{255}",
-                    'network_class': ip_class
-                }
-            second_oct_start += increment
-            second_oct_end += increment
-    elif octet_position == 0:
-        # Ex: [(0).0.0.0]
-        network_part = octets[0:octet_position]                # We have to calculate the last 3 octets in an IP Address
-        first_octet = octets[octet_position]
-        increment = math.ceil(assignable_ips / 16777216)       # (# of assignable IPs / subnet size) will be the start of the subnet address range
-        print(f'Increment: {increment}')
-        first_oct_start = 0
-        first_oct_end = first_oct_start + increment - 1
-        while True:
-            if (first_oct_start <= int(first_octet) <= first_oct_end):
-                # append the network sections of the address to the last octet
-                return  {
-                    'net_addr': f"{first_oct_start}.{0}.{0}.{0}", 
-                    'first_host': f"{first_oct_start}.{0}.{0}.{1}",
-                    'last_host': f"{first_oct_end}.{255}.{255}.{254}", 
-                    'broad_addr': f"{first_oct_end}.{255}.{255}.{255}",
-                    'network_class': ip_class
-                }
-            first_oct_start += increment
-            first_oct_end += increment
+    oct_start = 0
+    network_part = octets[0:octet_position]
+    current_octet = octets[octet_position]
+    increment = get_increment(octet_position, assignable_ips)
 
+    if octet_position == 3:
+        oct_end = oct_start + (subnet_count - 1) if subnet_count > 1 else 255
+    else:
+        oct_end = oct_start + increment - 1
+
+    while True:
+        if oct_start <= int(current_octet) <= oct_end:
+            results = {
+                3: {'net_addr': f"{'.'.join(network_part)}.{oct_start}", 'first_host': f"{'.'.join(network_part)}.{oct_start + 1}",'last_host': f"{'.'.join(network_part)}.{oct_end - 1}", 'broad_addr': f"{'.'.join(network_part)}.{oct_end}",'network_class': ip_class},
+                2: {'net_addr': f"{'.'.join(network_part)}.{oct_start}.{0}", 'first_host': f"{'.'.join(network_part)}.{oct_start}.{1}",'last_host': f"{'.'.join(network_part)}.{oct_end}.{254}", 'broad_addr': f"{'.'.join(network_part)}.{oct_end}.{255}",'network_class': ip_class},
+                1: {'net_addr': f"{'.'.join(network_part)}.{oct_start}.{0}.{0}", 'first_host': f"{'.'.join(network_part)}.{oct_start}.{0}.{1}",'last_host': f"{'.'.join(network_part)}.{oct_end}.{255}.{254}", 'broad_addr': f"{'.'.join(network_part)}.{oct_end}.{255}.{255}",'network_class': ip_class},
+                0: {'net_addr': f"{oct_start}.{0}.{0}.{0}", 'first_host': f"{oct_start}.{0}.{0}.{1}",'last_host': f"{oct_end}.{255}.{255}.{254}", 'broad_addr': f"{oct_end}.{255}.{255}.{255}",'network_class': ip_class}
+            }
+            return results[octet_position]
+        oct_start += increment
+        oct_end += increment
 
 
 def organize_info(ip: str, cidr: int, classful_cidr: int, octet_position: int):
@@ -194,5 +145,5 @@ def get_subnet_and_ip_addr_count(ip: str, cidr: int | None, subnet_mask: str | N
 
 if __name__ == '__main__':
     print()
-    get_subnet_and_ip_addr_count('192.168.10.17', cidr=0, subnet_mask=None)
+    get_subnet_and_ip_addr_count('192.168.10.17', cidr=8, subnet_mask=None)
     print()
