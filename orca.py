@@ -89,9 +89,10 @@ class Orchestrator:
         # connect to the target host
         client = SSHClient()
         client.load_host_keys(f'{known_hosts}')
-        user = "zcool"
-        password = "wally1dog"
-        client.connect(hostname=ip, username=user, password=password)
+        # read creds through env variables
+        # user = 
+        # password = 
+        # client.connect(hostname=ip, username=user, password=password)
         # run commands
         self._exec_handler(client)
         # close channel
